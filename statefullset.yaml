@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres #este nome tem que ser igual ao do template
+spec:
+  replicas: 4
+  serviceName: postgres-h #nome tem que ser identico ao service criado para o kubernets do banco de dados (ClusterIp deve ser none handlelessService onde cada replica faz um trabalho)
+  # podManagementPolicy: Parallel # criar os pods de forma paralela
+  selector:
+      matchLabels:
+        app: postgres # este nome do selector precisa ser igual ao do label
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres-container
+          image: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "102030"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-volume
+
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-volume
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
